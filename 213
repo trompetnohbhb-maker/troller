@@ -1,0 +1,47 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local TrollSettings = {
+    Fling = false,
+    ChatAnnoy = false
+}
+
+-- [[ 1. LOGIKA FLING (MEMENTALKAN ORANG) ]] --
+-- Cara kerja: Membuat kecepatan bagian tubuhmu menjadi sangat tinggi (inf) 
+-- sehingga saat bersentuhan, orang lain akan terpental ke luar map.
+RunService.Heartbeat:Connect(function()
+    if TrollSettings.Fling and LocalPlayer.Character then
+        local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        
+        if root and hum then
+            -- Bypass fisik: Memberikan velocity ekstrem secara rotasi
+            local oldVelocity = root.Velocity
+            root.Velocity = Vector3.new(9999, 9999, 9999) -- Kecepatan mementalkan
+            
+            -- Menghilangkan tabrakan sementara agar tidak memantul sendiri
+            for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                end
+            end
+            
+            RunService.RenderStepped:Wait()
+            root.Velocity = oldVelocity
+        end
+    end
+end)
+
+-- [[ 2. LOGIKA CHAT ANNOY (MENIRU PESAN SERVER) ]] --
+task.spawn(function()
+    while task.wait(1) do
+        if TrollSettings.ChatAnnoy then
+            local msg = "[SERVER]: Player " .. LocalPlayer.Name .. " has been promoted to Admin."
+            local chatEvents = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+            if chatEvents then
+                chatEvents.SayMessageRequest:FireServer(msg, "All")
+            end
+        end
+    end
+end)
