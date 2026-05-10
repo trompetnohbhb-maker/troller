@@ -1,47 +1,72 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local TrollSettings = {
-    Fling = false,
-    ChatAnnoy = false
+local Settings = {
+    BoxColor = Color3.fromRGB(0, 255, 255),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    HealthBar = true,
+    Distance = true
 }
 
--- [[ 1. LOGIKA FLING (MEMENTALKAN ORANG) ]] --
--- Cara kerja: Membuat kecepatan bagian tubuhmu menjadi sangat tinggi (inf) 
--- sehingga saat bersentuhan, orang lain akan terpental ke luar map.
-RunService.Heartbeat:Connect(function()
-    if TrollSettings.Fling and LocalPlayer.Character then
-        local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        
-        if root and hum then
-            -- Bypass fisik: Memberikan velocity ekstrem secara rotasi
-            local oldVelocity = root.Velocity
-            root.Velocity = Vector3.new(9999, 9999, 9999) -- Kecepatan mementalkan
-            
-            -- Menghilangkan tabrakan sementara agar tidak memantul sendiri
-            for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = false
-                end
-            end
-            
-            RunService.RenderStepped:Wait()
-            root.Velocity = oldVelocity
-        end
-    end
-end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
--- [[ 2. LOGIKA CHAT ANNOY (MENIRU PESAN SERVER) ]] --
-task.spawn(function()
-    while task.wait(1) do
-        if TrollSettings.ChatAnnoy then
-            local msg = "[SERVER]: Player " .. LocalPlayer.Name .. " has been promoted to Admin."
-            local chatEvents = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-            if chatEvents then
-                chatEvents.SayMessageRequest:FireServer(msg, "All")
+local function CreateDraw(obj, props)
+    local draw = Drawing.new(obj)
+    for i, v in pairs(props) do draw[i] = v end
+    return draw
+end
+
+local function AddPremiumESP(Player)
+    local Box = CreateDraw("Square", {Thickness = 1, Visible = false})
+    local HealthBar = CreateDraw("Line", {Thickness = 2, Visible = false})
+    local Info = CreateDraw("Text", {Size = 13, Center = true, Outline = true, Visible = false})
+
+    RunService.RenderStepped:Connect(function()
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player ~= LocalPlayer then
+            local Hum = Player.Character:FindFirstChildOfClass("Humanoid")
+            local Root = Player.Character.HumanoidRootPart
+            local Pos, OnScreen = Camera:WorldToViewportPoint(Root.Position)
+
+            if OnScreen and Hum and Hum.Health > 0 then
+                local Size = 2000 / Pos.Z
+                local BoxSize = Vector2.new(Size, Size * 1.5)
+                local BoxPos = Vector2.new(Pos.X - BoxSize.X / 2, Pos.Y - BoxSize.Y / 2)
+
+                -- 1. BOX
+                Box.Size = BoxSize
+                Box.Position = BoxPos
+                Box.Color = Settings.BoxColor
+                Box.Visible = true
+
+                -- 2. PREMIUM HEALTH BAR (Samping Box)
+                if Settings.HealthBar then
+                    local HealthOffset = (Hum.Health / Hum.MaxHealth) * BoxSize.Y
+                    HealthBar.From = Vector2.new(BoxPos.X - 5, BoxPos.Y + BoxSize.Y)
+                    HealthBar.To = Vector2.new(BoxPos.X - 5, BoxPos.Y + BoxSize.Y - HealthOffset)
+                    HealthBar.Color = Color3.fromRGB(255 - (255 * (Hum.Health/Hum.MaxHealth)), 255 * (Hum.Health/Hum.MaxHealth), 0)
+                    HealthBar.Visible = true
+                end
+
+                -- 3. INFO (Nama & Jarak)
+                if Settings.Distance then
+                    local Dist = math.floor((Root.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+                    Info.Text = Player.Name .. " | " .. Dist .. "m"
+                    Info.Position = Vector2.new(Pos.X, BoxPos.Y + BoxSize.Y + 5)
+                    Info.Color = Settings.TextColor
+                    Info.Visible = true
+                end
+            else
+                Box.Visible = false
+                HealthBar.Visible = false
+                Info.Visible = false
             end
+        else
+            Box.Visible = false
+            HealthBar.Visible = false
+            Info.Visible = false
         end
-    end
-end)
+    end)
+end
+
+for _, v in pairs(Players:GetPlayers()) do AddPremiumESP(v) end
+Players.PlayerAdded:Connect(AddPremiumESP)
