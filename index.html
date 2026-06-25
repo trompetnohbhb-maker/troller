@@ -1,0 +1,204 @@
+-- 1. UTAMA & FRAME KONTROL
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SimpleStopwatchHub"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 240, 0, 220)
+MainFrame.Position = UDim2.new(0.5, -120, 0.4, -110)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- 2. BARIS JUDUL (TITLE BAR)
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -60, 0, 30)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "STOPWATCH HUB"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 14
+TitleLabel.Parent = MainFrame
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -30, 0, 3)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.TextSize = 14
+CloseBtn.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 4)
+CloseCorner.Parent = CloseBtn
+
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 25, 0, 25)
+MinBtn.Position = UDim2.new(1, -60, 0, 3)
+MinBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MinBtn.Text = "-"
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.TextSize = 14
+MinBtn.Parent = MainFrame
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 4)
+MinCorner.Parent = MinBtn
+
+-- 3. KONTEN UTAMA (FRAME ISI)
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, 0, 1, -35)
+ContentFrame.Position = UDim2.new(0, 0, 0, 35)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+-- Text Box Indikator Utama dengan tambahan teks "detik"
+local DelayInput = Instance.new("TextBox")
+DelayInput.Size = UDim2.new(0, 180, 0, 40)
+DelayInput.Position = UDim2.new(0.5, -90, 0, 10)
+DelayInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+DelayInput.Text = "0 detik" -- Menambahkan format teks default
+DelayInput.TextColor3 = Color3.fromRGB(100, 255, 100)
+DelayInput.Font = Enum.Font.Code
+DelayInput.TextSize = 22 -- Disesuaikan sedikit agar teks "detik" muat dengan rapi
+DelayInput.TextEditable = false
+DelayInput.Parent = ContentFrame
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 4)
+InputCorner.Parent = DelayInput
+
+-- Label Milidetik di bawah Kotak Detik Utama
+local SubMiliLabel = Instance.new("TextLabel")
+SubMiliLabel.Size = UDim2.new(0, 160, 0, 20)
+SubMiliLabel.Position = UDim2.new(0.5, -80, 0, 52)
+SubMiliLabel.BackgroundTransparency = 1
+SubMiliLabel.Text = "000 ms"
+SubMiliLabel.TextColor3 = Color3.fromRGB(150, 200, 150)
+SubMiliLabel.Font = Enum.Font.Code
+SubMiliLabel.TextSize = 14
+SubMiliLabel.Parent = ContentFrame
+
+-- Tombol Mulai / Stop (Toggle Button)
+local StartBtn = Instance.new("TextButton")
+StartBtn.Size = UDim2.new(0, 160, 0, 30)
+StartBtn.Position = UDim2.new(0.5, -80, 0, 80)
+StartBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+StartBtn.Text = "MULAI WAKTU"
+StartBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StartBtn.Font = Enum.Font.SourceSansBold
+StartBtn.TextSize = 14
+StartBtn.Parent = ContentFrame
+
+local StartCorner = Instance.new("UICorner")
+StartCorner.CornerRadius = UDim.new(0, 4)
+StartCorner.Parent = StartBtn
+
+-- Tombol Tambah Angka Detik (+1 Detik)
+local AddTimeBtn = Instance.new("TextButton")
+AddTimeBtn.Size = UDim2.new(0, 160, 0, 30)
+AddTimeBtn.Position = UDim2.new(0.5, -80, 0, 115)
+AddTimeBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+AddTimeBtn.Text = "+1 DETIK INSTAN"
+AddTimeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AddTimeBtn.Font = Enum.Font.SourceSansBold
+AddTimeBtn.TextSize = 14
+AddTimeBtn.Parent = ContentFrame
+
+local AddCorner = Instance.new("UICorner")
+AddCorner.CornerRadius = UDim.new(0, 4)
+AddCorner.Parent = AddTimeBtn
+
+-- Label Status Perhitungan Waktu
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Position = UDim2.new(0, 0, 0, 155)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Status: Berhenti"
+StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+StatusLabel.Font = Enum.Font.SourceSansItalic
+StatusLabel.TextSize = 13
+StatusLabel.Parent = ContentFrame
+
+-- 4. LOGIKA UTAMA STOPWATCH
+local isRunning = false
+local currentSeconds = 0
+local startTime = 0
+
+-- Fungsi Close
+CloseBtn.MouseButton1Click:Connect(function()
+    isRunning = false
+    ScreenGui:Destroy()
+end)
+
+-- Fungsi Minimize
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    ContentFrame.Visible = not minimized
+    MainFrame.Size = minimized and UDim2.new(0, 240, 0, 30) or UDim2.new(0, 240, 0, 220)
+    MinBtn.Text = minimized and "+" or "-"
+end)
+
+-- Fungsi Perulangan Waktu (Menambahkan teks "detik" di belakang angka)
+local RenderConnection
+local function startTimerLoop()
+    startTime = os.clock() - currentSeconds
+    RenderConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        if not isRunning then 
+            if RenderConnection then RenderConnection:Disconnect() end
+            return 
+        end
+        
+        local elapsedTime = os.clock() - startTime
+        currentSeconds = math.floor(elapsedTime)
+        local miliseconds = math.floor((elapsedTime - currentSeconds) * 1000)
+        
+        -- Memasukkan angka dengan imbuhan kata "detik" ke dalam Text Box
+        DelayInput.Text = tostring(currentSeconds) .. " detik"
+        SubMiliLabel.Text = string.format("%03d ms", miliseconds)
+    end)
+end
+
+-- Fungsi Tombol Mulai/Stop Waktu
+StartBtn.MouseButton1Click:Connect(function()
+    if not isRunning then
+        isRunning = true
+        StartBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        StartBtn.Text = "STOP WAKTU"
+        StatusLabel.Text = "Status: Menghitung..."
+        StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        
+        startTimerLoop()
+    else
+        isRunning = false
+        if RenderConnection then RenderConnection:Disconnect() end
+        StartBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        StartBtn.Text = "MULAI WAKTU"
+        StatusLabel.Text = "Status: Berhenti pada " .. DelayInput.Text
+        StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+end)
+
+-- Fungsi Tombol Tambah Detik (+1 Detik secara instan)
+AddTimeBtn.MouseButton1Click:Connect(function()
+    if isRunning then
+        startTime = startTime - 1
+    else
+        currentSeconds = currentSeconds + 1
+        DelayInput.Text = tostring(currentSeconds) .. " detik"
+    end
+end)
